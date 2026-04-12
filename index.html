@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Counselors — A Governance System for Everything That Matters</title>
+    <meta name="description" content="An AI-augmented life governance system. Nine domains. One protocol. No drift.">
+    <meta property="og:title" content="The Counselors">
+    <meta property="og:description" content="Most lives don't collapse. They drift. The Counselors is a system designed to make drift impossible.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #1a1816;
+            --surface-hover: #211f1b;
+            --border: rgba(212, 168, 83, 0.08);
+            --border-hover: rgba(212, 168, 83, 0.2);
+            --text: #e8e4de;
+            --text-muted: #9a958d;
+            --text-dim: #6b6560;
+            --accent: #d4a853;
+            --accent-bright: #e8c36a;
+            --accent-dim: #b8943f;
+            --green: #4a9;
+            --yellow: #ca4;
+            --red: #c55;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', 'Segoe UI', sans-serif;
+            font-size: 1.0625rem;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- NOISE OVERLAY --- */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        /* --- PARALLAX --- */
+        .parallax-section {
+            position: relative;
+            min-height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .parallax-bg {
+            position: absolute;
+            top: -20%;
+            left: 0;
+            right: 0;
+            bottom: -20%;
+            z-index: 0;
+        }
+
+        .parallax-section .content {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            padding: 4rem 2rem;
+        }
+
+        .parallax-drift .parallax-bg {
+            background: radial-gradient(ellipse at 30% 50%, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+        }
+
+        .parallax-hard .parallax-bg {
+            background: radial-gradient(ellipse at 70% 40%, rgba(212, 168, 83, 0.04) 0%, transparent 60%);
+        }
+
+        .parallax-closing .parallax-bg {
+            background: radial-gradient(ellipse at 50% 50%, rgba(212, 168, 83, 0.08) 0%, transparent 60%);
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 168, 83, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 80%, rgba(212, 168, 83, 0.03) 0%, transparent 50%);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 200px;
+            background: linear-gradient(transparent, var(--bg));
+            z-index: 2;
+        }
+
+        .hero-hook {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            color: var(--text-muted);
+            max-width: 500px;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.2s;
+        }
+
+        .hero-hook em {
+            color: var(--text);
+            font-style: normal;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.5s;
+        }
+
+        .hero .tagline {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-muted);
+            max-width: 500px;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.8s;
+        }
+
+        /* Hero email form */
+        .hero-form-wrap {
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1.1s;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* --- SCROLL REVEAL --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* --- SECTIONS --- */
+        section {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 140px 2rem;
+        }
+
+        section.tight {
+            padding: 2rem 2rem;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+            color: var(--text-muted);
+        }
+
+        p strong {
+            color: var(--text);
+        }
+
+        p em {
+            color: var(--text-muted);
+        }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+            margin: 0 auto;
+        }
+
+        /* --- DRIFT QUOTE --- */
+        .drift-quote {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            color: var(--text);
+            text-align: center;
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .drift-quote em {
+            color: var(--accent);
+            font-style: normal;
+            position: relative;
+        }
+
+        .drift-quote em::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; right: 0;
+            height: 1px;
+            background: var(--accent);
+            opacity: 0.4;
+        }
+
+        /* --- DOMAINS --- */
+        .domains-stage-wrapper {
+            min-height: 250vh;
+            position: relative;
+        }
+
+        .domains-stage {
+            position: sticky;
+            top: 16vh;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .domains-container {
+            position: relative;
+            height: 380px;
+        }
+
+        .domain-card {
+            position: absolute;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: default;
+            will-change: transform, left, top, width;
+            transition: box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .domain-card:hover {
+            box-shadow: 0 6px 20px rgba(212, 168, 83, 0.06);
+        }
+
+        .domain-card .icon {
+            margin-bottom: 0.3rem;
+            opacity: 0.85;
+            filter: grayscale(1) brightness(3);
+        }
+
+        .domain-card .name {
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .domain-split-line {
+            position: absolute;
+            left: 5%; right: 5%;
+            height: 1px;
+            background: var(--accent-dim);
+            opacity: 0;
+            transform: scaleX(0);
+            pointer-events: none;
+        }
+
+        .split-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .split-label.sov { color: var(--accent); }
+        .split-label.rel { color: var(--text-muted); }
+
+        /* --- TIERS & CARDS --- */
+        .tier {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .tier:hover {
+            border-color: var(--border-hover);
+            transform: translateX(3px);
+        }
+
+        .tier-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+        }
+
+        .tier-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.01em;
+        }
+
+        .tier p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        /* --- PROTOCOL --- */
+        .steps {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .steps li {
+            counter-increment: step;
+            padding: 1rem 0;
+            padding-left: 3.5rem;
+            position: relative;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(212, 168, 83, 0.06);
+            transition: color 0.3s, padding-left 0.3s;
+        }
+
+        .steps li:hover {
+            color: var(--text);
+            padding-left: 4rem;
+        }
+
+        .steps li:last-child { border-bottom: none; }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0; top: 1rem;
+            width: 2.2rem; height: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--accent);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .steps li:hover::before {
+            border-color: var(--border-hover);
+            background: rgba(212, 168, 83, 0.06);
+        }
+
+        /* --- MID-PAGE CTA --- */
+        .mid-cta {
+            text-align: center;
+            padding: 3rem 2rem;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .mid-cta p {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- DASHBOARD --- */
+        .dashboard-preview { margin: 2rem 0; }
+
+        .dashboard-header {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .dash-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 0.5rem;
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+            cursor: default;
+        }
+
+        .dash-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .dash-card.green:hover { border-color: var(--green); box-shadow: 0 4px 16px rgba(68, 170, 153, 0.1); }
+        .dash-card.yellow:hover { border-color: var(--yellow); box-shadow: 0 4px 16px rgba(204, 170, 68, 0.1); }
+        .dash-card.red:hover { border-color: var(--red); box-shadow: 0 4px 16px rgba(204, 85, 85, 0.1); }
+
+        .dash-card .dash-icon {
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
+            opacity: 0.8;
+            filter: grayscale(1) brightness(3);
+        }
+
+        .dash-card .dash-name {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .dash-card .dash-status {
+            font-size: 0.55rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .dash-card.green { border-color: rgba(68, 170, 153, 0.2); }
+        .dash-card.green .dash-name { color: var(--green); }
+        .dash-card.green .dash-status { color: rgba(68, 170, 153, 0.5); }
+
+        .dash-card.yellow { border-color: rgba(204, 170, 68, 0.2); }
+        .dash-card.yellow .dash-name { color: var(--yellow); }
+        .dash-card.yellow .dash-status { color: rgba(204, 170, 68, 0.5); }
+
+        .dash-card.red { border-color: rgba(204, 85, 85, 0.2); animation: pulseRedBorder 2.5s ease-in-out infinite; }
+        .dash-card.red .dash-name { color: var(--red); }
+        .dash-card.red .dash-status { color: rgba(204, 85, 85, 0.5); }
+
+        @keyframes pulseRedBorder {
+            0%, 100% { border-color: rgba(204, 85, 85, 0.2); }
+            50% { border-color: rgba(204, 85, 85, 0.4); box-shadow: 0 0 12px rgba(204, 85, 85, 0.08); }
+        }
+
+        /* --- EMAIL FORMS --- */
+        .email-form {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .email-form input[type="email"] {
+            flex: 1;
+            padding: 14px 16px;
+            background: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: var(--radius-sm);
+            color: #111;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+
+        .email-form input[type="email"]:focus {
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.2);
+        }
+
+        .email-form input[type="email"]::placeholder {
+            color: #999;
+        }
+
+        .email-form button {
+            padding: 14px 28px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.25s, transform 0.2s;
+            white-space: nowrap;
+        }
+
+        .email-form button:hover {
+            background: var(--accent-bright);
+            transform: translateY(-1px);
+        }
+
+        .email-form button:active {
+            background: var(--accent-dim);
+            transform: translateY(0);
+        }
+
+        .form-note {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.75rem;
+            text-align: center;
+        }
+
+        .success-message {
+            display: none;
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--green);
+            border-radius: var(--radius);
+            color: var(--green);
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        /* --- ABOUT / CREATOR --- */
+        .about-line {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            padding: 2rem;
+        }
+
+        /* --- CTA SECTION --- */
+        .cta-section {
+            text-align: center;
+            padding: 0 2rem;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 { margin-bottom: 1rem; }
+        .cta-section p { margin-bottom: 2rem; }
+
+        /* --- STICKY MOBILE CTA --- */
+        .sticky-cta {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 12px 16px;
+            background: rgba(10, 10, 10, 0.95);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .sticky-cta button {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(212, 168, 83, 0.06);
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            section { padding: 80px 1.25rem; }
+            .email-form { flex-direction: column; }
+            .email-form button { width: 100%; padding: 16px; }
+            .sticky-cta { display: block; }
+            .dashboard-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+            .dash-card { padding: 1rem 0.25rem; }
+            .parallax-bg { display: none; }
+            .hero { min-height: 90vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO — lead with the problem -->
+    <div class="hero" id="hero">
+        <div class="hero-bg"></div>
+        <p class="hero-hook">Your life is <em>drifting</em>. One domain at a time.</p>
+        <h1>The Counselors</h1>
+        <p class="tagline">A governance system for everything that matters.</p>
+        <div class="hero-form-wrap">
+            <form class="email-form" id="hero-form">
+                <input type="email" placeholder="your@email.com" required>
+                <button type="submit">Get the Free Prompts</button>
+            </form>
+            <p class="form-note">9 AI-ready prompts — one for each domain. Free during pre-launch.</p>
+        </div>
+    </div>
+
+    <!-- DRIFT THESIS -->
+    <div class="parallax-section parallax-drift">
+        <div class="parallax-bg"></div>
+        <div class="content">
+            <div class="drift-quote reveal">
+                Most lives don't collapse.<br>
+                They <em>drift</em>.
+            </div>
+        </div>
+    </div>
+
+    <section>
+        <p class="reveal">Not all at once. Not dramatically. One domain <em>quietly falls behind</em> while you're focused on another. Your health slips while you're building your career. Your relationships thin while you're fixing your finances. Your mind stagnates while your body is fine.</p>
+        <p class="reveal reveal-delay-1">No single failure. Just a <strong>slow, unmonitored decline</strong> across the things that matter most.</p>
+        <p class="reveal reveal-delay-2"><strong>The Counselors is a system designed to make drift impossible.</strong></p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- DOMAINS -->
+    <section class="tight">
+        <h2 class="reveal">Nine Domains</h2>
+        <p class="reveal">Your life is a <strong>portfolio</strong>. These are the assets. Gains and losses in one <em>ripple across the others</em>.</p>
+    </section>
+
+    <div class="domains-stage-wrapper" id="domains-wrapper">
+        <div class="domains-stage" id="domains-stage">
+            <p class="inward-caption" id="inward-caption" style="text-align:center; font-size:0.95rem; font-style:italic; color:var(--accent); margin:0 auto 1.5rem; max-width:500px; opacity:0;">The inward domains are your foundation. When they're strong, you bring your best self to everything else.</p>
+            <div class="domains-container" id="domains-container">
+                <div class="domain-card sovereign" data-slot="0"><div class="icon">💪</div><div class="name">Physical</div></div>
+                <div class="domain-card sovereign" data-slot="1"><div class="icon">🧠</div><div class="name">Mental</div></div>
+                <div class="domain-card sovereign" data-slot="2"><div class="icon">🕯️</div><div class="name">Spiritual</div></div>
+                <div class="domain-card sovereign" data-slot="3"><div class="icon">📖</div><div class="name">Scholarship</div></div>
+                <div class="domain-card sovereign" data-slot="4"><div class="icon">💲</div><div class="name">Finance</div></div>
+                <div class="domain-card relational" data-slot="5"><div class="icon">💼</div><div class="name">Profession</div></div>
+                <div class="domain-card relational" data-slot="6"><div class="icon">🏠</div><div class="name">Family</div></div>
+                <div class="domain-card relational" data-slot="7"><div class="icon">🤝</div><div class="name">Friends</div></div>
+                <div class="domain-card relational" data-slot="8"><div class="icon">💕</div><div class="name">Pair Bond</div></div>
+
+                <div class="domain-split-line" id="split-line"></div>
+                <span class="split-label sov" id="label-inward">Inward</span>
+                <span class="split-label rel" id="label-outward">Outward</span>
+            </div>
+            <p id="outward-caption" style="font-size: 0.95rem; font-style: italic; color: #fff; text-align: center; max-width: 500px; margin: 1.5rem auto 0; opacity: 0;">The outward domains rely heavily on personal interactions and connections. You can do everything right and still fail — because they depend on the whims and wishes of others. That's not a bug. It's the structural truth of human connection.</p>
+        </div>
+    </div>
+
+    <section class="tight">
+        <p class="reveal">Each domain has a dedicated <strong>Counselor</strong> — a structured AI session that runs the same rigorous protocol, tailored to its domain.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- THREE TIERS -->
+    <section>
+        <h2 class="reveal">Three Tiers</h2>
+
+        <div class="tier reveal reveal-delay-1">
+            <div class="tier-label">Tier 1 — Domain</div>
+            <div class="tier-title">The Counselors</div>
+            <p><strong>One per domain.</strong> Runs the 9-step protocol. Diagnoses, defines mission and vision, identifies tensions, scores health, assigns concrete actions. <em>The structured mirror you never had.</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-2">
+            <div class="tier-label">Tier 2 — Coordination</div>
+            <div class="tier-title">The Supervisor</div>
+            <p><strong>Oversees all nine counselors.</strong> Maintains the action registry and follow-through monitoring. <em>"Is the overall structure of this life moving toward stability, growth, and coherence?"</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-3">
+            <div class="tier-label">Tier 3 — Integration</div>
+            <div class="tier-title">The Council Meeting</div>
+            <p><strong>All nine domains report in.</strong> Structured round-robin. The format that creates accountability and surfaces cross-domain conflicts. <em>Where the whole picture becomes visible.</em></p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- PROTOCOL -->
+    <section>
+        <h2 class="reveal">The Protocol</h2>
+        <p class="reveal">Every counselor session follows the same <strong>nine steps</strong>. No improvisation. <em>No drift.</em></p>
+
+        <ol class="steps">
+            <li class="reveal"><strong>Where I Stand</strong> — <em>honest</em> diagnostic of current state</li>
+            <li class="reveal"><strong>Mission</strong> — what is this domain <em>fundamentally</em> for?</li>
+            <li class="reveal"><strong>Vision</strong> — at age 85, what would <em>"handled well"</em> look like?</li>
+            <li class="reveal"><strong>Principles</strong> — non-negotiable <em>identity-level</em> guardrails</li>
+            <li class="reveal"><strong>Structural Tensions</strong> — contradictions and trade-offs</li>
+            <li class="reveal"><strong>Literature Review</strong> — frameworks that <em>clarify thinking</em></li>
+            <li class="reveal"><strong>Metrics</strong> — health score (0&ndash;10) + trajectory (&minus;2 to +2)</li>
+            <li class="reveal"><strong>Immediate Actions</strong> — <em>specific, realistic, measurable</em></li>
+            <li class="reveal"><strong>Cadence</strong> — when do we <em>meet again?</em></li>
+        </ol>
+    </section>
+
+    <!-- MID-PAGE CTA -->
+    <div class="mid-cta reveal">
+        <p>Be among the first to shape the system.</p>
+        <form class="email-form" id="mid-form">
+            <input type="email" placeholder="your@email.com" required>
+            <button type="submit">Get the Free Prompts</button>
+        </form>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THE SYSTEM -->
+    <section>
+        <h2 class="reveal">The System</h2>
+        <p class="reveal">The Counselors is <em>not</em> a book. It's <em>not</em> an app. It's an <strong>integrated platform</strong> designed to work together.</p>
+
+        <div class="tier reveal reveal-delay-1">
+            <div class="tier-label">The Engine</div>
+            <div class="tier-title">AI Prompts</div>
+            <p><strong>Structured counselor prompts for every domain.</strong> Run them with Claude, ChatGPT, or any AI tool. The protocol does the heavy lifting. <em>The AI enforces structure and prevents drift within sessions.</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-2">
+            <div class="tier-label">The Accountability Layer</div>
+            <div class="tier-title">Web Platform</div>
+            <p><strong>A dashboard that tracks which domains are on track and which are drifting.</strong> Reminders, session scheduling, and progress over time. <em>The thing that brings you back.</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-3">
+            <div class="tier-label">The Framework</div>
+            <div class="tier-title">The Book</div>
+            <p><strong>The full philosophy, the drift thesis, the portfolio model, the method.</strong> Nine domain chapters with prose, examples, exemplar figures, and curated reading guides. <em>The deep understanding behind the system.</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-4">
+            <div class="tier-label">The Guide</div>
+            <div class="tier-title">Video & Instruction</div>
+            <p><strong>Walkthroughs for running your first session, setting up your dashboard, and conducting a council meeting.</strong> <em>See the system in action before you commit.</em></p>
+        </div>
+
+        <div class="tier reveal reveal-delay-4">
+            <div class="tier-label">The Forum</div>
+            <div class="tier-title">Community</div>
+            <p>Others working through the same system. <strong>Accountability partners</strong>, shared progress, and the knowledge that someone else is doing the hard work alongside you. <em>Drift is harder when someone is watching.</em></p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- HARD WORK -->
+    <div class="parallax-section parallax-hard">
+        <div class="parallax-bg"></div>
+        <div class="content" style="text-align: center; max-width: 560px;">
+            <p class="reveal" style="font-size: 1.1rem; color: var(--text); font-style: italic; line-height: 1.9; margin: 0;">This is not easy. Running an honest diagnostic across every domain of your life — then committing to act on what you find — may be the hardest work you'll ever do. It's supposed to be.</p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- DASHBOARD -->
+    <section>
+        <h2 class="reveal">The Dashboard</h2>
+        <p class="reveal">A simple accountability layer. Nine domains. Are you on track?</p>
+
+        <div class="dashboard-preview reveal">
+            <div class="dashboard-header">Domain Status</div>
+            <div class="dashboard-grid">
+                <div class="dash-card green"><div class="dash-icon">💪</div><div class="dash-name">Physical</div><div class="dash-status">On Track</div></div>
+                <div class="dash-card yellow"><div class="dash-icon">🧠</div><div class="dash-name">Mental</div><div class="dash-status">At Risk</div></div>
+                <div class="dash-card green"><div class="dash-icon">🕯️</div><div class="dash-name">Spiritual</div><div class="dash-status">On Track</div></div>
+                <div class="dash-card green"><div class="dash-icon">📖</div><div class="dash-name">Scholarship</div><div class="dash-status">On Track</div></div>
+                <div class="dash-card green"><div class="dash-icon">💲</div><div class="dash-name">Finance</div><div class="dash-status">On Track</div></div>
+                <div class="dash-card yellow"><div class="dash-icon">💼</div><div class="dash-name">Profession</div><div class="dash-status">At Risk</div></div>
+                <div class="dash-card red"><div class="dash-icon">🏠</div><div class="dash-name">Family</div><div class="dash-status">Drifting</div></div>
+                <div class="dash-card green"><div class="dash-icon">🤝</div><div class="dash-name">Friends</div><div class="dash-status">On Track</div></div>
+                <div class="dash-card red"><div class="dash-icon">💕</div><div class="dash-name">Pair Bond</div><div class="dash-status">Drifting</div></div>
+            </div>
+        </div>
+
+        <p class="reveal"><strong style="color:var(--green)">Green</strong> means on track. <strong style="color:var(--yellow)">Yellow</strong> means at risk. <strong style="color:var(--red)">Red</strong> means drifting. The dashboard doesn't judge — it just shows you <em>where to look</em>.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- BOTTOM CTA -->
+    <div class="parallax-section parallax-closing">
+        <div class="parallax-bg"></div>
+        <div class="content">
+            <div class="cta-section reveal">
+                <h2>Get the Prompts</h2>
+                <p>9 structured AI prompts — one for each life domain. Copy-paste ready for Claude or ChatGPT. <strong>Free during pre-launch.</strong></p>
+
+                <form class="email-form" id="signup-form">
+                    <input type="email" placeholder="your@email.com" required id="email-input">
+                    <button type="submit">Get the Free Prompts</button>
+                </form>
+                <p class="form-note">You'll receive the prompts immediately, plus updates when the book and platform launch.</p>
+
+                <div class="success-message" id="success-msg">
+                    Check your inbox. The Counselors are ready for you.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATOR -->
+    <p class="about-line">Built by Patrick Thompson — data scientist, systems thinker, recovering drifter.</p>
+
+    <footer>
+        The Counselors &mdash; A system, not inspiration.
+    </footer>
+
+    <!-- STICKY MOBILE CTA -->
+    <div class="sticky-cta" id="sticky-cta">
+        <button onclick="document.getElementById('signup-form').scrollIntoView({behavior:'smooth'})">Get the Free Prompts</button>
+    </div>
+
+    <script>
+        // --- Scroll reveal ---
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        reveals.forEach(el => observer.observe(el));
+
+        // --- Domain split — scroll-position driven ---
+        const domainsWrapper = document.getElementById('domains-wrapper');
+        const container = document.getElementById('domains-container');
+        const cards = document.querySelectorAll('#domains-container .domain-card');
+        const splitLine = document.getElementById('split-line');
+        const labelInward = document.getElementById('label-inward');
+        const labelOutward = document.getElementById('label-outward');
+        const inwardCaption = document.getElementById('inward-caption');
+        const outwardCaption = document.getElementById('outward-caption');
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function computeLayouts() {
+            const W = container.offsetWidth;
+            const gap = 10;
+            const cols3 = 3;
+            const cardW3 = (W - gap * (cols3 - 1)) / cols3;
+            const cardH3 = 80;
+            const startPos = [];
+            for (let i = 0; i < 9; i++) {
+                startPos.push({
+                    x: (i % 3) * (cardW3 + gap),
+                    y: Math.floor(i / 3) * (cardH3 + gap),
+                    w: cardW3, h: cardH3
+                });
+            }
+
+            const lineGap = 50;
+            const cardH5 = 65;
+            const cardW5 = (W - gap * 4) / 5;
+            const cardW4 = (W - gap * 3) / 4;
+            const sovOrder = [0,1,2,3,4];
+            const relOrder = [5,6,7,8];
+            const endPos = [];
+            for (let i = 0; i < 9; i++) {
+                const si = sovOrder.indexOf(i);
+                const ri = relOrder.indexOf(i);
+                if (si !== -1) {
+                    endPos[i] = { x: si * (cardW5 + gap), y: 0, w: cardW5, h: cardH5 };
+                } else {
+                    endPos[i] = { x: ri * (cardW4 + gap), y: cardH5 + lineGap, w: cardW4, h: cardH5 };
+                }
+            }
+
+            return { startPos, endPos, lineY: cardH5 + lineGap / 2, cardH3, gap, totalEndH: cardH5 + lineGap + cardH5 + 60 };
+        }
+
+        function updateDomainSplit() {
+            const rect = domainsWrapper.getBoundingClientRect();
+            const total = domainsWrapper.offsetHeight - window.innerHeight;
+            let progress = Math.max(0, Math.min(1, -rect.top / total));
+            const t = progress < 0.5 ? 2*progress*progress : 1 - Math.pow(-2*progress + 2, 2) / 2;
+
+            const { startPos, endPos, lineY, cardH3, gap, totalEndH } = computeLayouts();
+
+            cards.forEach(card => {
+                const i = parseInt(card.dataset.slot);
+                const s = startPos[i], e = endPos[i];
+                card.style.left = lerp(s.x, e.x, t) + 'px';
+                card.style.top = lerp(s.y, e.y, t) + 'px';
+                card.style.width = lerp(s.w, e.w, t) + 'px';
+                card.style.height = lerp(s.h, e.h, t) + 'px';
+                card.querySelector('.icon').style.fontSize = t > 0.5 ? '1.1rem' : '1.4rem';
+                card.querySelector('.name').style.fontSize = t > 0.5 ? '0.55rem' : '0.65rem';
+            });
+
+            const accentT = Math.max(0, Math.min(1, (progress - 0.25) / 0.3));
+            cards.forEach(card => {
+                if (card.classList.contains('sovereign')) {
+                    card.style.borderColor = `rgba(212, 168, 83, ${lerp(0.08, 0.25, accentT)})`;
+                    card.querySelector('.name').style.color = accentT > 0.5 ? '#d4a853' : '#9a958d';
+                } else {
+                    card.style.borderColor = `rgba(232, 228, 222, ${lerp(0.08, 0.3, accentT)})`;
+                    card.querySelector('.name').style.color = accentT > 0.5 ? '#e8e4de' : '#9a958d';
+                }
+            });
+
+            const startH = 3 * (cardH3 + gap) - gap;
+            container.style.height = lerp(startH, totalEndH, t) + 'px';
+
+            const currentLineY = lerp(startH / 2, lineY, t);
+            splitLine.style.top = currentLineY + 'px';
+            splitLine.style.opacity = accentT;
+            splitLine.style.transform = `scaleX(${accentT})`;
+
+            const labelOpacity = Math.max(0, (progress - 0.5) / 0.25);
+            labelInward.style.top = (currentLineY - 18) + 'px';
+            labelInward.style.opacity = labelOpacity;
+            labelOutward.style.top = (currentLineY + 6) + 'px';
+            labelOutward.style.opacity = labelOpacity;
+
+            inwardCaption.style.opacity = labelOpacity;
+            if (outwardCaption) outwardCaption.style.opacity = labelOpacity;
+        }
+
+        window.addEventListener('scroll', updateDomainSplit, { passive: true });
+        window.addEventListener('resize', updateDomainSplit);
+        updateDomainSplit();
+
+        // --- Parallax ---
+        const heroBg = document.querySelector('.hero-bg');
+        const parallaxBgs = document.querySelectorAll('.parallax-bg');
+
+        window.addEventListener('scroll', () => {
+            const y = window.pageYOffset;
+            if (heroBg) heroBg.style.transform = `translateY(${y * 0.3}px)`;
+            parallaxBgs.forEach(bg => {
+                bg.style.transform = `translateY(${bg.parentElement.getBoundingClientRect().top * 0.15}px)`;
+            });
+        }, { passive: true });
+
+        // --- Hero particles ---
+        (function() {
+            const hero = document.querySelector('.hero');
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.width = (Math.random() * 2 + 1) + 'px';
+                p.style.height = p.style.width;
+                p.style.animation = `particleFloat ${6 + Math.random() * 8}s ease-in-out infinite ${Math.random() * 5}s`;
+                hero.appendChild(p);
+            }
+            const s = document.createElement('style');
+            s.textContent = `@keyframes particleFloat { 0%,100%{opacity:0;transform:translateY(0)} 20%{opacity:0.2} 50%{opacity:0.1;transform:translateY(-50px)} 80%{opacity:0.2} }`;
+            document.head.appendChild(s);
+        })();
+
+        // --- Sticky mobile CTA visibility ---
+        const stickyCta = document.getElementById('sticky-cta');
+        const heroSection = document.querySelector('.hero');
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 600) {
+                stickyCta.style.display = window.pageYOffset > heroSection.offsetHeight ? 'block' : 'none';
+            }
+        }, { passive: true });
+
+        // --- Form handlers (all forms feed same endpoint) ---
+        document.querySelectorAll('.email-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = this.querySelector('input[type="email"]').value;
+                // TODO: Replace with actual API call
+                console.log('Email captured:', email);
+
+                // Show success on bottom form
+                const bottomForm = document.getElementById('signup-form');
+                const successMsg = document.getElementById('success-msg');
+                if (this === bottomForm) {
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'none';
+                    successMsg.style.display = 'block';
+                } else {
+                    // For hero/mid forms, show inline confirmation
+                    this.innerHTML = '<p style="color:var(--green); margin:0;">Check your inbox. The Counselors are ready for you.</p>';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
