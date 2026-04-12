@@ -435,6 +435,123 @@
             background: rgba(212, 168, 83, 0.06);
         }
 
+        /* --- CHAT DEMO --- */
+        .chat-demo {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .chat-header {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chat-window {
+            background: #111;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(212, 168, 83, 0.08);
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .chat-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .chat-bubble.agent {
+            background: var(--accent);
+            color: var(--bg);
+            border-bottom-left-radius: 4px;
+            margin-right: auto;
+        }
+
+        .chat-bubble.agent strong {
+            color: var(--bg);
+        }
+
+        .chat-bubble.user {
+            background: #2a2825;
+            color: var(--text);
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+
+        .chat-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+            padding-left: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .chat-label.visible { opacity: 1; }
+
+        .chat-label.agent-label { color: var(--accent-dim); }
+        .chat-label.user-label { color: var(--text-dim); text-align: right; padding-right: 0.25rem; }
+
+        .chat-step-tag {
+            display: inline-block;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--bg);
+            background: rgba(0,0,0,0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.3rem;
+        }
+
+        .chat-typing {
+            display: flex;
+            gap: 4px;
+            padding: 0.8rem 1rem;
+            max-width: 60px;
+            background: var(--accent);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-typing.visible { opacity: 1; }
+
+        .chat-typing span {
+            width: 6px;
+            height: 6px;
+            background: var(--bg);
+            border-radius: 50%;
+            animation: typingDot 1.2s ease-in-out infinite;
+        }
+
+        .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-3px); }
+        }
+
         /* --- MID-PAGE CTA --- */
         .mid-cta {
             text-align: center;
@@ -774,6 +891,67 @@
         </ol>
     </section>
 
+    <!-- CHAT DEMO -->
+    <section class="tight">
+        <h2 class="reveal" style="text-align:center;">See It in Action</h2>
+        <p class="reveal" style="text-align:center;">A real session with the <strong>Mental Health Counselor</strong> — step 1 of the protocol.</p>
+    </section>
+
+    <div class="chat-demo reveal" id="chat-demo">
+        <div class="chat-header">Mental Health Counselor — Step 1: Where I Stand</div>
+        <div class="chat-window" id="chat-window">
+
+            <div class="chat-label agent-label" data-chat="0">Counselor</div>
+            <div class="chat-bubble agent" data-chat="0">
+                <div class="chat-step-tag">Step 1 — Diagnostic</div>
+                What is the current state of your mental health right now? Not how you think it should be — how it actually is.
+            </div>
+
+            <div class="chat-label user-label" data-chat="1">You</div>
+            <div class="chat-bubble user" data-chat="1">
+                Honestly, I feel stretched thin. I'm not in crisis or anything, but I notice I'm more irritable than usual and I've stopped doing things that used to give me energy. I keep telling myself I'll get back to it but I don't.
+            </div>
+
+            <div class="chat-label agent-label" data-chat="2">Counselor</div>
+            <div class="chat-bubble agent" data-chat="2">
+                That's a clear and honest read. Let me separate two things you just said. The irritability — is that new in the last few weeks, or has it been building over months?
+            </div>
+
+            <div class="chat-label user-label" data-chat="3">You</div>
+            <div class="chat-bubble user" data-chat="3">
+                Months. Probably since the fall. I just didn't name it until now.
+            </div>
+
+            <div class="chat-label agent-label" data-chat="4">Counselor</div>
+            <div class="chat-bubble agent" data-chat="4">
+                That's important. A months-long pattern is structural, not situational. And the things that gave you energy — you said you stopped doing them. Can you name one specific thing you dropped?
+            </div>
+
+            <div class="chat-label user-label" data-chat="5">You</div>
+            <div class="chat-bubble user" data-chat="5">
+                I used to go for a long walk every Sunday morning. Haven't done it in three months.
+            </div>
+
+            <div class="chat-label agent-label" data-chat="6">Counselor</div>
+            <div class="chat-bubble agent" data-chat="6">
+                Good. That's concrete and recoverable. We'll come back to that when we get to immediate actions. For now — on a scale of 0 to 10, where would you place your mental health today?
+            </div>
+
+            <div class="chat-label user-label" data-chat="7">You</div>
+            <div class="chat-bubble user" data-chat="7">
+                Maybe a 5. Functional but not thriving.
+            </div>
+
+            <div class="chat-label agent-label" data-chat="8">Counselor</div>
+            <div class="chat-bubble agent" data-chat="8">
+                A 5 with a downward trajectory over several months. <strong>That's exactly what drift looks like.</strong> Not broken. Just quietly declining. Let's move to step 2 — what is your mental health fundamentally <em>for?</em>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
     <!-- MID-PAGE CTA -->
     <div class="mid-cta reveal">
         <p>Be among the first to shape the system.</p>
@@ -900,6 +1078,32 @@
             });
         }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
         reveals.forEach(el => observer.observe(el));
+
+        // --- Chat demo animation ---
+        const chatDemo = document.getElementById('chat-demo');
+        const chatElements = document.querySelectorAll('#chat-window [data-chat]');
+        let chatAnimated = false;
+
+        const chatObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !chatAnimated) {
+                    chatAnimated = true;
+                    let delay = 300;
+                    let lastChat = -1;
+                    chatElements.forEach(el => {
+                        const chatIdx = parseInt(el.dataset.chat);
+                        if (chatIdx !== lastChat) {
+                            delay += chatIdx === 0 ? 0 : 800;
+                            lastChat = chatIdx;
+                        }
+                        setTimeout(() => el.classList.add('visible'), delay);
+                        delay += 150;
+                    });
+                }
+            });
+        }, { threshold: 0.2 });
+
+        if (chatDemo) chatObserver.observe(chatDemo);
 
         // --- Domain split — scroll-position driven ---
         const domainsWrapper = document.getElementById('domains-wrapper');
