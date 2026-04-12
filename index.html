@@ -1039,24 +1039,48 @@
             }
         }, { passive: true });
 
-        // --- Form handlers (all forms feed same endpoint) ---
-        document.querySelectorAll('.email-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = this.querySelector('input[type="email"]').value;
-                // TODO: Replace with actual API call
-                console.log('Email captured:', email);
+        // --- Form handlers — all forms submit to ConvertKit ---
+        const CK_FORM_ID = '9318232';
+        const CK_API_KEY = 'hCv0COvu6Fe1EHcz8ReB4g';
 
-                // Show success on bottom form
-                const bottomForm = document.getElementById('signup-form');
-                const successMsg = document.getElementById('success-msg');
-                if (this === bottomForm) {
-                    this.style.display = 'none';
-                    this.nextElementSibling.style.display = 'none';
-                    successMsg.style.display = 'block';
-                } else {
-                    // For hero/mid forms, show inline confirmation
-                    this.innerHTML = '<p style="color:var(--green); margin:0;">Check your inbox. The Counselors are ready for you.</p>';
+        document.querySelectorAll('.email-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const emailInput = this.querySelector('input[type="email"]');
+                const email = emailInput.value;
+                const button = this.querySelector('button');
+                const originalText = button.textContent;
+                button.textContent = 'Sending...';
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(`https://api.convertkit.com/v3/forms/${CK_FORM_ID}/subscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            api_key: CK_API_KEY,
+                            email: email
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Show success
+                        const bottomForm = document.getElementById('signup-form');
+                        const successMsg = document.getElementById('success-msg');
+                        if (this === bottomForm) {
+                            this.style.display = 'none';
+                            this.nextElementSibling.style.display = 'none';
+                            successMsg.style.display = 'block';
+                        } else {
+                            this.innerHTML = '<p style="color:var(--green); margin:0;">Check your inbox. The Counselors are ready for you.</p>';
+                        }
+                    } else {
+                        button.textContent = 'Try again';
+                        button.disabled = false;
+                    }
+                } catch (err) {
+                    button.textContent = 'Try again';
+                    button.disabled = false;
                 }
             });
         });
